@@ -9,10 +9,11 @@ import { FolderModule } from './folder/folder.module';
 import { Folder } from './folder/entities/folder.entity';
 import { SharedModule } from './shared/shared.module';
 import { Shared } from './shared/entities/shared.entity';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
-    UserModule,
+    UserModule, AuthModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
