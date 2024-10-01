@@ -1,6 +1,7 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param } from '@nestjs/common';
 import { FolderService } from './folder.service';
 import { CreateFolderDto } from './dto/create-folder.dto';
+import { Folder } from './entities/folder.entity';
 
 @Controller('folder')
 export class FolderController {
@@ -9,5 +10,10 @@ export class FolderController {
   @Post()
   async createFolder(@Body() createFolderDto: CreateFolderDto) {
     return await this.folderService.create(createFolderDto);
+  }
+
+  @Get(':id')
+  async getFolder(@Param('id') id: number): Promise<Folder> {
+    return this.folderService.getFolderById(id);
   }
 }
