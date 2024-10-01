@@ -11,20 +11,21 @@ export class FileService {
     private filesRepository: Repository<File>,
   ) { }
 
-  async create(createFileDto: CreateFileDto): Promise<File> {
-    // Kiểm tra file có tồn tại trong cùng thư mục chưa
-    const isExist = await this.filesRepository.findOne({
-      where: {
-        name: createFileDto.name,
-        folder: { id: createFileDto.folderId },  // Truy vấn dựa trên quan hệ folder
-      },
+  async createFile(file: Express.Multer.File, createFileDto: CreateFileDto): Promise<File> {
+
+    const newFile = this.filesRepository.create({
+      name: createFileDto.name,
+      content: file.buffer,
+      type: createFileDto.type,
+      user: { id: createFileDto.userId },
+      folder: createFileDto.folderId ? { id: createFileDto.folderId } : null,
     });
 
-    if (isExist) {
-      throw new BadRequestException('File with the same name already exists in this folder!');
+    try {
+      return await this.filesRepository.save(newFile);
+    } catch (error) {
+      console.error('Error saving file:', error);
+      throw new BadRequestException('Could not save file.');
     }
-
-    const file = this.filesRepository.create(createFileDto);
-    return await this.filesRepository.save(file);
   }
 }

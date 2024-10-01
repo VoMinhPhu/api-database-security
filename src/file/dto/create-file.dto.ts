@@ -5,15 +5,12 @@ export class CreateFileDto {
     @IsString()
     name: string;
 
-    @IsNotEmpty()
-    @IsString()
-    content: string;
+    content: Buffer;
 
     @IsNotEmpty()
     @IsString()
     type: string;
 
-    @IsNotEmpty()
     userId: number;  // Liên kết với user
 
     @IsOptional()

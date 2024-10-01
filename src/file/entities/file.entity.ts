@@ -11,8 +11,8 @@ export class File {
     @Column()
     name: string;
 
-    @Column()
-    content: string;
+    @Column({ type: 'blob' })
+    content: Buffer;
 
     @Column()
     type: string;
