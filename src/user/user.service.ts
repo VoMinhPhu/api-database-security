@@ -1,9 +1,10 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { hashPassword } from 'src/ultils/ultils';
+import { UserRes } from './dto/user-res.dto';
 
 @Injectable()
 export class UserService {
@@ -12,7 +13,7 @@ export class UserService {
     private usersRepository: Repository<User>,
   ) { }
 
-  async create(createUserDto: CreateUserDto): Promise<any> {
+  async create(createUserDto: CreateUserDto): Promise<UserRes> {
     const isExist = await this.usersRepository.findOneBy({ username: createUserDto.username });
     if (isExist) {
       throw new ConflictException("Username already exists!");
@@ -35,5 +36,13 @@ export class UserService {
     return await this.usersRepository.findOneBy({ username })
   }
 
+  async getUserById(id: number): Promise<UserRes> {
+    const isExist = await this.usersRepository.findOneBy({ id });
+    if (!isExist) {
+      throw new NotFoundException("Invalid id user !")
+    }
+    const { password, ...results } = isExist
+    return results
+  }
 
 }
