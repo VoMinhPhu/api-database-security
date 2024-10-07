@@ -1,15 +1,18 @@
-import { Controller, Post, Body, Get, Param } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Request, UseGuards, HttpStatus, HttpCode } from '@nestjs/common';
 import { FaceService } from './face.service';
 import { CreateFaceDto } from './dto/create-face.dto';
 import { LoginFaceDto } from './dto/login-face.dto';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('face')
 export class FaceController {
   constructor(private readonly faceService: FaceService) { }
 
+  @UseGuards(AuthGuard)
   @Post('register')
-  async registerFace(@Body() createFaceDto: CreateFaceDto) {
-    return this.faceService.registerFace(createFaceDto);
+  async registerFace(@Body() createFaceDto: CreateFaceDto, @Request() req) {
+    const userId = req.user.sub
+    return this.faceService.registerFace(createFaceDto, userId);
   }
 
   @Get(':userId')
@@ -17,12 +20,9 @@ export class FaceController {
     return await this.faceService.findByUserId(userId);
   }
 
-  @Post('login-with-face')
+  @HttpCode(HttpStatus.OK)
+  @Post('login')
   async loginWithFace(@Body() faceData: LoginFaceDto) {
-    const user = await this.faceService.loginWithFace(faceData.faceDescriptor);
-    if (user) {
-      return { message: 'Login successful', user };
-    }
-    return { message: 'Face not recognized' };
+    return await this.faceService.loginWithFace(faceData.faceDescriptor);
   }
 }

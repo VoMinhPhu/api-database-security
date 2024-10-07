@@ -6,6 +6,7 @@ import { CreateFaceDto } from './dto/create-face.dto';
 import { User } from 'src/user/entities/user.entity';
 import { UserService } from 'src/user/user.service';
 import { UserRes } from 'src/user/dto/user-res.dto';
+import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
 export class FaceService {
@@ -15,11 +16,12 @@ export class FaceService {
     @InjectRepository(Face)
     private faceRepository: Repository<Face>,
     private userService: UserService,
+    private authService: AuthService
   ) { }
 
 
-  async registerFace(createFaceDto: CreateFaceDto): Promise<Face> {
-    const { userId, faceDescriptor } = createFaceDto;
+  async registerFace(createFaceDto: CreateFaceDto, userId: number): Promise<Face> {
+    const { faceDescriptor } = createFaceDto;
 
     // Kiểm tra xem user đã có đăng ký khuôn mặt chưa
     const existingFace = await this.faceRepository.findOne({ where: { user: { id: userId } } });
@@ -44,16 +46,23 @@ export class FaceService {
     return await this.faceRepository.find({ where: { user: { id: userId } } });
   }
 
-  async loginWithFace(faceDescriptor: number[]): Promise<UserRes | null> {
+  async loginWithFace(faceDescriptor: number[]): Promise<{ message: string, access_token: string } | { message: string }> {
     const faceDescriptorBuffer = Buffer.from(faceDescriptor);
     const faces = await this.faceRepository.find();
     for (const face of faces) {
       const distance = this.compareFaces(face.faceDescriptor, faceDescriptorBuffer);
       if (distance < this.threshold) {
-        return await this.userService.getUserById(face.userId);
+        const user = await this.userService.getUserById(face.userId);
+        if (user) {
+          const payload = { sub: face.userId, username: user.username }
+          return {
+            message: 'Login successful',
+            access_token: await this.authService.createToken(payload)
+          }
+        }
       }
     }
-    return null;
+    return { message: 'Face not recognized' };
   }
 
   compareFaces(descriptor1: Buffer, descriptor2: Buffer): number {
