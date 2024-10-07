@@ -10,6 +10,8 @@ import { Folder } from './folder/entities/folder.entity';
 import { SharedModule } from './shared/shared.module';
 import { Shared } from './shared/entities/shared.entity';
 import { AuthModule } from './auth/auth.module';
+import { FaceModule } from './face/face.module';
+import { Face } from './face/entities/face.entity';
 
 @Module({
   imports: [
@@ -25,7 +27,7 @@ import { AuthModule } from './auth/auth.module';
         connectString: `${configService.get('DATABASE_HOST')}:${configService.get('DATABASE_PORT')}/${configService.get('DATABASE_SERVICENAME')}`,
         username: configService.get('DATABASE_USERNAME'),
         password: configService.get('DATABASE_PASS'),
-        entities: [User, File, Folder, Shared],
+        entities: [User, File, Folder, Shared, Face],
         synchronize: true,
       }),
       inject: [ConfigService],
@@ -33,6 +35,7 @@ import { AuthModule } from './auth/auth.module';
     FileModule,
     FolderModule,
     SharedModule,
+    FaceModule,
   ],
 })
 export class AppModule { }

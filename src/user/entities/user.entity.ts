@@ -1,7 +1,8 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, OneToOne } from 'typeorm';
 import { File } from 'src/file/entities/file.entity';
 import { Folder } from 'src/folder/entities/folder.entity';
 import { Shared } from 'src/shared/entities/shared.entity'; // Import Shared entity
+import { Face } from 'src/face/entities/face.entity';
 
 @Entity()
 export class User {
@@ -34,4 +35,8 @@ export class User {
     // Quan hệ 1-nhiều với Shared
     @OneToMany(() => Shared, shared => shared.owner)
     shared: Shared[];
+
+    // Quan hệ 1-1 với Face
+    @OneToOne(() => Face, face => face.user)
+    face: Face;
 }
