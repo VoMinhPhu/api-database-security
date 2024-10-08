@@ -15,8 +15,10 @@ export class FaceController {
     return this.faceService.registerFace(createFaceDto, userId);
   }
 
-  @Get(':userId')
-  async getByUserId(@Param('userId') userId: number) {
+  @UseGuards(AuthGuard)
+  @Get('get-user')
+  async getByUserId(@Request() req) {
+    const userId = req.user.sub;
     return await this.faceService.findByUserId(userId);
   }
 

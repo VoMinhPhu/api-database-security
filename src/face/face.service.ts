@@ -5,12 +5,11 @@ import { Face } from './entities/face.entity';
 import { CreateFaceDto } from './dto/create-face.dto';
 import { User } from 'src/user/entities/user.entity';
 import { UserService } from 'src/user/user.service';
-import { UserRes } from 'src/user/dto/user-res.dto';
 import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
 export class FaceService {
-  private readonly threshold = 0.6;
+  private readonly threshold = 0.5;
 
   constructor(
     @InjectRepository(Face)
@@ -35,7 +34,7 @@ export class FaceService {
     }
 
     // Chuyển đổi faceDescriptor thành Buffer
-    const faceBuffer = Buffer.from(new Float32Array(faceDescriptor));
+    const faceBuffer = Buffer.from(new Float32Array(faceDescriptor).buffer);
 
     const face = this.faceRepository.create({ user: { id: userId } as User, faceDescriptor: faceBuffer });
     return this.faceRepository.save(face);
@@ -47,22 +46,29 @@ export class FaceService {
   }
 
   async loginWithFace(faceDescriptor: number[]): Promise<{ message: string, access_token: string } | { message: string }> {
-    const faceDescriptorBuffer = Buffer.from(faceDescriptor);
+    const faceDescriptorBuffer = Buffer.from(new Float32Array(faceDescriptor).buffer);
     const faces = await this.faceRepository.find();
+    const lstId = []
+    const lstDistance = []
     for (const face of faces) {
       const distance = this.compareFaces(face.faceDescriptor, faceDescriptorBuffer);
       if (distance < this.threshold) {
-        const user = await this.userService.getUserById(face.userId);
-        if (user) {
-          const payload = { sub: face.userId, username: user.username }
-          return {
-            message: 'Login successful',
-            access_token: await this.authService.createToken(payload)
-          }
-        }
+        lstDistance.push(distance)
+        lstId.push(face.userId)
       }
     }
-    return { message: 'Face not recognized' };
+    if (lstDistance.length != 0) {
+      const minDistance = Math.min(...lstDistance)
+      const minIndex = lstDistance.indexOf(minDistance)
+      const user = await this.userService.getUserById(lstId[minIndex]);
+      const payload = { sub: minDistance, username: user.username }
+      return {
+        message: 'Login successful',
+        access_token: await this.authService.createToken(payload)
+      }
+    }
+
+    return { message: 'Face not recognized' }
   }
 
   compareFaces(descriptor1: Buffer, descriptor2: Buffer): number {
@@ -71,11 +77,18 @@ export class FaceService {
 
   calculateDistance(descriptor1: Buffer, descriptor2: Buffer): number {
     let sum = 0;
-    for (let i = 0; i < descriptor1.length; i++) {
-      sum += Math.pow(descriptor1[i] - descriptor2[i], 2);
+
+    // Chuyển đổi Buffer thành Float32Array
+    const arr1 = new Float32Array(descriptor1.buffer, descriptor1.byteOffset, descriptor1.length / 4);
+    const arr2 = new Float32Array(descriptor2.buffer, descriptor2.byteOffset, descriptor2.length / 4);
+
+    for (let i = 0; i < arr1.length; i++) {
+      sum += Math.pow(arr1[i] - arr2[i], 2);
     }
     return Math.sqrt(sum);
   }
+
+
 
 
 }
