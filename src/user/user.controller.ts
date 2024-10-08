@@ -17,4 +17,10 @@ export class UserController {
   async getInfoUser(@Request() req) {
     return await this.userService.getUserById(req.user.sub)
   }
+
+  @UseGuards(AuthGuard)
+  @Post('change-password')
+  async changePassword(@Body("oldPass") oldPass: string, @Body("newPass") newPass: string, @Request() req) {
+    return await this.userService.changePassword(oldPass, newPass, req.user.sub)
+  }
 }

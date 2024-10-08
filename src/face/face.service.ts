@@ -61,7 +61,7 @@ export class FaceService {
       const minDistance = Math.min(...lstDistance)
       const minIndex = lstDistance.indexOf(minDistance)
       const user = await this.userService.getUserById(lstId[minIndex]);
-      const payload = { sub: minDistance, username: user.username }
+      const payload = { sub: lstId[minIndex], username: user.username }
       return {
         message: 'Login successful',
         access_token: await this.authService.createToken(payload)

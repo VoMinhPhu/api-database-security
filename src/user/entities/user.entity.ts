@@ -24,6 +24,12 @@ export class User {
     @Column()
     address: string;
 
+    @Column()
+    otp: string
+
+    @Column({ default: false })
+    isVerified: boolean
+
     // Quan hệ 1-nhiều với File
     @OneToMany(() => File, file => file.user)
     files: File[];

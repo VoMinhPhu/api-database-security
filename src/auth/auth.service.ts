@@ -3,8 +3,12 @@ import { UserService } from '../user/user.service'
 import { LoginDto } from 'src/auth/dto/login.dto';
 import { comparePassword } from 'src/ultils/ultils';
 import { JwtService } from '@nestjs/jwt';
+import * as nodemailer from 'nodemailer';
+
 @Injectable()
 export class AuthService {
+    private transporter;
+
     constructor(
         private usersService: UserService,
         private jwtService: JwtService

@@ -16,4 +16,7 @@ export class CreateUserDto {
 
     @IsString()
     address: string;
+
+    otp: string;
+    isVerified: boolean;
 }
