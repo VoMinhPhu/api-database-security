@@ -16,18 +16,21 @@ export class FileService {
 
   async createFile(file: Express.Multer.File, createFileDto: CreateFileDto): Promise<File> {
 
-    const folder = await this.foldersRepository.findOne({
-      where: { id: createFileDto.folderId }
-    })
-    if (!folder) {
-      throw new NotFoundException(`Folder with ID ${createFileDto.folderId} not found.`);
+    if (createFileDto.folderId) {
+      const folder = await this.foldersRepository.findOne({
+        where: { id: createFileDto.folderId }
+      })
+      if (!folder) {
+        throw new NotFoundException(`Folder with ID ${createFileDto.folderId} not found.`);
+      }
     }
 
 
     const newFile = this.filesRepository.create({
-      name: createFileDto.name,
+      name: file.originalname,
       content: file.buffer,
-      type: createFileDto.type,
+      type: file.mimetype,
+      size: file.size,
       user: { id: createFileDto.userId },
       folder: createFileDto.folderId ? { id: createFileDto.folderId } : null,
     });

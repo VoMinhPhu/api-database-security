@@ -18,6 +18,9 @@ export class File {
     type: string;
 
     @Column()
+    size: number;
+
+    @Column()
     userId: number; // ID của người sở hữu
 
     @Column({ nullable: true })

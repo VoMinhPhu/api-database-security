@@ -15,8 +15,7 @@ export class FileController {
     @UploadedFile() file: Express.Multer.File,
     @Body() createFileDto: CreateFileDto,
     @Request() req) {
-    const userId = req.user.sub
-    createFileDto.userId = userId
+    createFileDto.userId = req.user.sub
     return this.fileService.createFile(file, createFileDto)
   }
 }
